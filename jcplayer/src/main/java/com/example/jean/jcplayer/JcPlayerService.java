@@ -1,7 +1,9 @@
 package com.example.jean.jcplayer;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
@@ -14,6 +16,7 @@ public class JcPlayerService extends Service implements
         MediaPlayer.OnCompletionListener,
         MediaPlayer.OnBufferingUpdateListener,
         MediaPlayer.OnErrorListener{
+
     private final IBinder mBinder = new JCPlayerServiceBinder();
     private MediaPlayer mediaPlayer;
     private boolean isPlaying;
@@ -94,15 +97,35 @@ public class JcPlayerService extends Service implements
         isPlaying = false;
     }
 
-    public void play(JcAudio JcAudio)  {
-        this.currentJcAudio = JcAudio;
+    public void play(JcAudio jcAudio)  {
+        this.currentJcAudio = jcAudio;
 
         try {
             if (mediaPlayer == null) {
                 mediaPlayer = new MediaPlayer();
-                mediaPlayer.setDataSource(JcAudio.getPath());
-                mediaPlayer.prepareAsync();
 
+                if(jcAudio.getOrigin() == Origin.URL)
+                    mediaPlayer.setDataSource(jcAudio.getPath());
+
+                else if(jcAudio.getOrigin() == Origin.RAW){
+                    String file = jcAudio.getPath().substring(6, jcAudio.getPath().length() - 4);
+                    int filePath = getApplicationContext().getResources().getIdentifier(file, "raw", getApplicationContext().getPackageName());
+                    AssetFileDescriptor afd = getApplicationContext().getResources().openRawResourceFd(filePath);
+                    mediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+                    afd.close();
+                }
+
+                else if(jcAudio.getOrigin() == Origin.ASSETS){
+                    String file = jcAudio.getPath().substring(6, jcAudio.getPath().length() - 4);
+                    AssetFileDescriptor afd = getApplicationContext().getAssets().openFd(file);
+                    mediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+                    afd.close();
+                }
+//
+//                else if(jcAudio.getOrigin() == Origin.FILE_PATH)
+//                    mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(jcAudio.getPath()));
+
+                mediaPlayer.prepareAsync();
                 mediaPlayer.setOnPreparedListener(this);
                 mediaPlayer.setOnBufferingUpdateListener(this);
                 mediaPlayer.setOnCompletionListener(this);
@@ -110,7 +133,7 @@ public class JcPlayerService extends Service implements
 
             } else if (isPlaying) {
                 stop();
-                play(JcAudio);
+                play(jcAudio);
 
             } else {
                 mediaPlayer.start();
