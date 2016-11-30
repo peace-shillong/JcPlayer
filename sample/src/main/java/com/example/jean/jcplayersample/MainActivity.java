@@ -26,9 +26,9 @@ public class MainActivity extends AppCompatActivity {
         player = (JcPlayerView) findViewById(R.id.jcplayer);
 
         ArrayList<String> urls = new ArrayList<>();
-        urls.add("http://www.villopim.com.br/android/Music_01.mp3");
-        urls.add("http://www.villopim.com.br/android/Music_02.mp3");
-        player.initWithTitlePlaylist(urls, "Awesome music");
+        player.addAudio("Hi, I am an web url :)", "http://www.villopim.com.br/android/Music_01.mp3", this);
+//        player.addAudio("Oh man! I am an ASSET file.", getAssets().open(""));
+        player.addAudio("Yes! I am an RAW file.", "R.raw.zodiaco.mp3", this);
 
         adapterSetup();
     }
