@@ -8,12 +8,9 @@ import java.io.Serializable;
 
 public class JcAudio implements Serializable {
     private int id;
-
     private String title;
-
     private int position;
-
-    private String url;
+    private String path;
 
     public int getId() {
         return id;
@@ -39,31 +36,31 @@ public class JcAudio implements Serializable {
         this.position = position;
     }
 
-    public String getUrl() {
-        return url;
+    public String getPath() {
+        return path;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setPath(String path) {
+        this.path = path;
     }
 
 
-    public JcAudio(String url, String title, int id, int position){
+    public JcAudio(String path, String title, int id, int position){
         this.id = id;
         this.position = position;
         this.title = title;
-        this.url = url;
+        this.path = path;
 
     }
 
-    public JcAudio(String url, String title){
+    public JcAudio(String path, String title){
         // It looks bad
-        int randomNumber = url.length() + title.length();
+        int randomNumber = path.length() + title.length();
 
         this.id = randomNumber;
         this.position = randomNumber;
         this.title = title;
-        this.url = url;
+        this.path = path;
     }
 
     public JcAudio(){

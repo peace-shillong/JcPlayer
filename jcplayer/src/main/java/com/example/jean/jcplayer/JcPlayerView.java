@@ -79,11 +79,11 @@ public class JcPlayerView extends LinearLayout implements
             playlist = new ArrayList<>();
 
         for(JcAudio audio : mPlaylist){
-            if( isUrlValid(audio.getUrl()) )
+            if( isUrlValid(audio.getPath()) )
              this.playlist.add(audio);
 
             else
-                throw new AudioUrlInvalidException(audio.getUrl());
+                throw new AudioUrlInvalidException(audio.getPath());
         }
 
         jcAudioPlayer = new JcAudioPlayer(getContext(), playlist, JcPlayerView.this);
@@ -105,7 +105,7 @@ public class JcPlayerView extends LinearLayout implements
                 jcAudio = new JcAudio();
                 jcAudio.setId(i);
                 jcAudio.setPosition(i);
-                jcAudio.setUrl(urls.get(i));
+                jcAudio.setPath(urls.get(i));
                 playlist.add(jcAudio);
 
                 generateTitleAudio("Track " + String.valueOf(i+1), i);
@@ -133,7 +133,7 @@ public class JcPlayerView extends LinearLayout implements
                 jcAudio = new JcAudio();
                 jcAudio.setId(i);
                 jcAudio.setPosition(i);
-                jcAudio.setUrl(urls.get(i));
+                jcAudio.setPath(urls.get(i));
                 playlist.add(jcAudio);
 
                 generateTitleAudio(title + " " + String.valueOf(i+1), i);

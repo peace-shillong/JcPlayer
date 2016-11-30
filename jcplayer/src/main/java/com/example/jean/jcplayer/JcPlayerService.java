@@ -100,7 +100,7 @@ public class JcPlayerService extends Service implements
         try {
             if (mediaPlayer == null) {
                 mediaPlayer = new MediaPlayer();
-                mediaPlayer.setDataSource(JcAudio.getUrl());
+                mediaPlayer.setDataSource(JcAudio.getPath());
                 mediaPlayer.prepareAsync();
 
                 mediaPlayer.setOnPreparedListener(this);
