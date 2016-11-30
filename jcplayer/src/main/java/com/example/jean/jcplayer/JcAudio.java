@@ -1,5 +1,9 @@
 package com.example.jean.jcplayer;
 
+import android.content.Context;
+
+import com.example.jean.jcplayer.JcPlayerExceptions.AudioInvalidPathException;
+
 import java.io.Serializable;
 
 /**
@@ -10,7 +14,31 @@ public class JcAudio implements Serializable {
     private int id;
     private String title;
     private int position;
+    private Origin origin;
     private String path;
+    public static String[] formats = new String[]{".mp3"};
+
+
+    public JcAudio(String path, String title, int id, int position){
+        this.id = id;
+        this.position = position;
+        this.title = title;
+        this.path = path;
+    }
+
+    public JcAudio(String path, String title, Context context){
+        // It looks bad
+        int randomNumber = path.length() + title.length();
+
+        this.id = randomNumber;
+        this.position = randomNumber;
+        this.title = title;
+        this.path = path;
+    }
+
+    public JcAudio(){
+
+    }
 
     public int getId() {
         return id;
@@ -44,26 +72,11 @@ public class JcAudio implements Serializable {
         this.path = path;
     }
 
-
-    public JcAudio(String path, String title, int id, int position){
-        this.id = id;
-        this.position = position;
-        this.title = title;
-        this.path = path;
-
+    public Origin getOrigin() {
+        return origin;
     }
 
-    public JcAudio(String path, String title){
-        // It looks bad
-        int randomNumber = path.length() + title.length();
-
-        this.id = randomNumber;
-        this.position = randomNumber;
-        this.title = title;
-        this.path = path;
-    }
-
-    public JcAudio(){
-
+    public void setOrigin(Origin origin) {
+        this.origin = origin;
     }
 }
