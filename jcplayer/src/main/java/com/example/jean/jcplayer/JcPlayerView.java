@@ -14,8 +14,8 @@ import android.widget.TextView;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.example.jean.jcplayer.JcPlayerExceptions.AudioInvalidPathException;
 import com.example.jean.jcplayer.JcPlayerExceptions.AudioListNullPointerException;
-import com.example.jean.jcplayer.JcPlayerExceptions.AudioUrlInvalidException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,7 @@ public class JcPlayerView extends LinearLayout implements
     private ImageButton btnNext;
     private SeekBar seekBar;
     private TextView txtCurrentDuration;
+    private Context context;
 
 
     public JcPlayerView(Context context){
@@ -79,100 +80,94 @@ public class JcPlayerView extends LinearLayout implements
             playlist = new ArrayList<>();
 
         for(JcAudio audio : mPlaylist){
-            if( isUrlValid(audio.getPath()) )
-             this.playlist.add(audio);
-
-            else
-                throw new AudioUrlInvalidException(audio.getPath());
+            validateMyPath(audio);
+            this.playlist.add(audio);
         }
-
-        jcAudioPlayer = new JcAudioPlayer(getContext(), playlist, JcPlayerView.this);
+        jcAudioPlayer = new JcAudioPlayer(context, playlist, JcPlayerView.this);
     }
 
 
     /**
      * Initialize an anonymous playlist with a default title for all
-     * @param urls List of urls strings
+     * @param paths List of path strings
      */
-    public void initAnonPlaylist(ArrayList<String> urls){
+    public void initAnonPlaylist(ArrayList<String> paths){
         JcAudio jcAudio;
 
         if(playlist == null)
             playlist = new ArrayList<>();
 
-        for(int i = 0; i < urls.size(); i++){
-            if(isUrlValid(urls.get(i))){
-                jcAudio = new JcAudio();
-                jcAudio.setId(i);
-                jcAudio.setPosition(i);
-                jcAudio.setPath(urls.get(i));
-                playlist.add(jcAudio);
+        for(int i = 0; i < paths.size(); i++){
+            jcAudio = new JcAudio();
+            jcAudio.setId(i);
+            jcAudio.setPosition(i);
+            jcAudio.setPath(paths.get(i));
 
-                generateTitleAudio("Track " + String.valueOf(i+1), i);
-            }else
-                throw new AudioUrlInvalidException(urls.get(i));
+            validateMyPath(jcAudio);
+            playlist.add(jcAudio);
+
+            generateTitleAudio("Track " + String.valueOf(i+1), i);
         }
 
-        jcAudioPlayer = new JcAudioPlayer(getContext(), playlist, JcPlayerView.this);
+        jcAudioPlayer = new JcAudioPlayer(context, playlist, JcPlayerView.this);
     }
 
 
     /**
      * Initialize an anonymous playlist, but with a custom title for all
-     * @param urls List of urls strings
+     * @param paths List of path strings
      * @param title Default title
      */
-    public void initWithTitlePlaylist(ArrayList<String> urls, String title){
+    public void initWithTitlePlaylist(ArrayList<String> paths, String title){
         JcAudio jcAudio;
 
         if(playlist == null)
             playlist = new ArrayList<>();
 
-        for(int i = 0; i < urls.size(); i++){
-            if(isUrlValid(urls.get(i))){
-                jcAudio = new JcAudio();
-                jcAudio.setId(i);
-                jcAudio.setPosition(i);
-                jcAudio.setPath(urls.get(i));
-                playlist.add(jcAudio);
+        for(int i = 0; i < paths.size(); i++){
+            jcAudio = new JcAudio();
+            jcAudio.setId(i);
+            jcAudio.setPosition(i);
+            jcAudio.setPath(paths.get(i));
 
-                generateTitleAudio(title + " " + String.valueOf(i+1), i);
-            }else
-                throw new AudioUrlInvalidException(urls.get(i));
+            validateMyPath(jcAudio);
+            playlist.add(jcAudio);
+
+            generateTitleAudio(title + " " + String.valueOf(i+1), i);
         }
 
-        jcAudioPlayer = new JcAudioPlayer(getContext(), playlist, JcPlayerView.this);
+        jcAudioPlayer = new JcAudioPlayer(context, playlist, JcPlayerView.this);
     }
 
 
     /**
      * Initialize an anonymous playlist, but with a custom title for all
      * @param title Audio title
-     * @param url List of urls strings
+     * @param path List of path strings
      */
-    public void addAudio(String title, String url){
-        if(isUrlValid(url)) {
-            if (playlist == null)
-                playlist = new ArrayList<>();
+    public void addAudio(String title, String path, Context context){
+        this.context = context;
 
-            int lastPosition = playlist.size();
-            playlist.add(lastPosition,
-                    new JcAudio(url, title, /* id */ lastPosition + 1, /* position */ lastPosition + 1));
+        if (playlist == null)
+            playlist = new ArrayList<>();
 
-            if (jcAudioPlayer == null)
-                jcAudioPlayer = new JcAudioPlayer(getContext(), playlist, JcPlayerView.this);
-        }else
-            throw new AudioUrlInvalidException(url);
+        int lastPosition = playlist.size();
+        JcAudio jcAudio = new JcAudio();
+        jcAudio.setId(lastPosition + 1);
+        jcAudio.setTitle(title);
+        jcAudio.setPath(path);
+        jcAudio.setPosition(lastPosition + 1);
+
+        validateMyPath(jcAudio);
+        playlist.add(lastPosition, jcAudio);
+
+        if (jcAudioPlayer == null)
+            jcAudioPlayer = new JcAudioPlayer(context, playlist, JcPlayerView.this);
+
     }
-
-
 
     private void generateTitleAudio(String title, int position){
         playlist.get(position).setTitle(title);
-    }
-
-    private boolean isUrlValid(String url){
-        return url.startsWith("http") || url.startsWith("https");
     }
 
     @Override
@@ -217,13 +212,15 @@ public class JcPlayerView extends LinearLayout implements
     public void playAudio(String url, String title){
         showProgressBar();
 
-        JcAudio jcAudio = new JcAudio(url, title);
+        JcAudio jcAudio = new JcAudio(url, title, context);
+        validateMyPath(jcAudio);
+
         if (playlist == null)
             playlist = new ArrayList<>();
         playlist.add(jcAudio);
 
         if(jcAudioPlayer == null)
-            jcAudioPlayer = new JcAudioPlayer(getContext(), playlist, JcPlayerView.this);
+            jcAudioPlayer = new JcAudioPlayer(context, playlist, JcPlayerView.this);
 
         try {
             jcAudioPlayer.playAudio(jcAudio);
@@ -441,5 +438,35 @@ public class JcPlayerView extends LinearLayout implements
 
     public List<JcAudio> getMyPlaylist(){
         return playlist;
+    }
+
+    public void validateMyPath(JcAudio jcAudio){
+        for(String format : JcAudio.formats) {
+            if (jcAudio.getPath().endsWith(format)) {
+
+                if (jcAudio.getPath().startsWith("http://") || jcAudio.getPath().startsWith("https://")) {
+                    jcAudio.setOrigin(Origin.URL);
+                    return;
+
+                }else if (jcAudio.getPath().startsWith("R.raw.")) {
+                    String file = jcAudio.getPath().substring(6, jcAudio.getPath().length() - 4);
+                    int result = context.getResources().getIdentifier(file, "raw", context.getPackageName());
+
+                    if(result != 0) {
+                        jcAudio.setOrigin(Origin.RAW);
+                        return;
+                    }
+
+                } else if (jcAudio.getPath().startsWith("R.assets.")) {
+                    int result = context.getResources().getIdentifier(jcAudio.getPath().substring(6), "assets", context.getPackageName());
+                    if(result != 0) {
+                        jcAudio.setOrigin(Origin.ASSETS);
+                        return;
+                    }
+                }
+            }
+        }
+
+        throw new AudioInvalidPathException(jcAudio.getPath());
     }
 }
